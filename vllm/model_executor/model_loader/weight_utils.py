@@ -422,7 +422,9 @@ def pt_weights_iterator(
             disable=not enable_tqdm,
             bar_format=_BAR_FORMAT,
     ):
-        state = torch.load(bin_file, map_location="cpu")
+        state = torch.load(bin_file, map_location="cpu", weights_only=True)
+        if "model" in state:
+            state = state["model"]
         yield from state.items()
         del state
         torch.cuda.empty_cache()

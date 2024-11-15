@@ -495,7 +495,7 @@ def load_params_config(model: Union[str, Path],
     config_dict["hidden_act"] = config_dict.get("activation", "silu")
     config_dict["tie_word_embeddings"] = config_dict.get(
         "tie_embeddings", False)
-    config_dict["max_seq_len"] = config_dict.get("max_seq_len", 128_000)
+    config_dict["max_seq_len"] = config_dict.get("max_seq_len", None) or config_dict.get("max_seqlen", 128_000)
     config_dict["max_position_embeddings"] = config_dict.get(
         "max_position_embeddings", 128_000)
 

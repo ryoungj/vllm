@@ -198,6 +198,8 @@ class DefaultModelLoader(BaseModelLoader):
             use_safetensors = True
             allow_patterns = ["consolidated*.safetensors"]
             index_file = "consolidated.safetensors.index.json"
+        elif load_format == LoadFormat.LINGUA:
+            allow_patterns = ["consolidated.pth"]
         elif load_format == LoadFormat.PT:
             allow_patterns = ["*.pt"]
         elif load_format == LoadFormat.NPCACHE:
