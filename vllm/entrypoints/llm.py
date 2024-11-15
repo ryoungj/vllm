@@ -1,8 +1,10 @@
 import itertools
 import warnings
 from contextlib import contextmanager
+from pydantic import Field
 from typing import (Any, ClassVar, Dict, List, Optional, Sequence, Tuple, Type,
                     Union, cast, overload)
+from typing_extensions import Annotated
 
 from tqdm import tqdm
 
@@ -895,6 +897,7 @@ class LLM:
         priority: int = 0,
     ) -> None:
         request_id = str(next(self.request_counter))
+        prompt = self._validate_prompt(prompt, params.truncate_prompt_tokens)
         self.llm_engine.add_request(
             request_id,
             prompt,
@@ -903,6 +906,25 @@ class LLM:
             prompt_adapter_request=prompt_adapter_request,
             priority=priority,
         )
+
+    def _validate_prompt(
+        self,
+        prompt: PromptType,
+        truncate_prompt_tokens: Optional[Annotated[int, Field(ge=1)]] = None
+    ) -> PromptType:
+        if truncate_prompt_tokens is not None:
+            if isinstance(prompt, str) or "prompt" in prompt:  # TextPrompt
+                prompt_token_ids = self.llm_engine.tokenizer.tokenizer(prompt).input_ids
+            else:
+                prompt_token_ids = prompt["prompt_token_ids"]
+            
+            if len(prompt_token_ids) > truncate_prompt_tokens:
+                logger.info(f"Prompt length {len(prompt_token_ids)} exceeds the truncate_prompt_tokens {truncate_prompt_tokens}, truncating...")
+                prompt_token_ids = prompt_token_ids[-truncate_prompt_tokens:]
+            
+            return TokensPrompt(prompt_token_ids=prompt_token_ids)
+        
+        return prompt
 
     def _add_guided_params(
             self,
