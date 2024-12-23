@@ -486,7 +486,10 @@ def load_params_config(model: Union[str, Path],
             config_dict = {}
             for key, value in elem.items():
                 key = config_mapping.get(key, key)
-                config_dict[key] = recurse_elems(value)
+                if key == "rope_scaling":  # maintain rope_scaling as a dict for compatibility with HF
+                    config_dict[key] = value  
+                else:
+                    config_dict[key] = recurse_elems(value)
             return PretrainedConfig(**config_dict)
         else:
             return elem
